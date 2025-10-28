@@ -163,6 +163,14 @@
             background-color: #0d62d3;
         }
         
+        .btn-camera {
+            background-color: #5f6368;
+        }
+        
+        .btn-camera:hover {
+            background-color: #4a4d52;
+        }
+        
         /* Plant Cards */
         .plants-grid {
             display: grid;
@@ -310,6 +318,69 @@
         .thermometer.high::before {
             height: 90%;
             background-color: var(--danger);
+        }
+        
+        /* Camera Feed Styles */
+        .camera-feed {
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            display: none;
+        }
+        
+        .camera-feed.active {
+            display: block;
+        }
+        
+        .camera-header {
+            background-color: var(--dark);
+            color: white;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .camera-live {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .camera-live::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .camera-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .camera-placeholder {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 14px;
         }
         
         /* Process Visualization */
@@ -773,7 +844,7 @@
             </div>
 
             <div class="plants-grid">
-                <!-- Planta 1 -->
+                <!-- Planta 1 - El Alto -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -805,10 +876,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="elalto">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-elalto">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta El Alto</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/001.jpg" alt="Cámara Planta El Alto" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 2 -->
+                <!-- Planta 2 - Viacha -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -840,10 +925,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="viacha">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-viacha">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Viacha</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/002.jpg" alt="Cámara Planta Viacha" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 3 -->
+                <!-- Planta 3 - Achacachi -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -875,10 +974,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="achacachi">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-achacachi">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Achacachi</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/003.jpg" alt="Cámara Planta Achacachi" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 4 -->
+                <!-- Planta 4 - Coroico -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -910,10 +1023,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="coroico">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-coroico">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Coroico</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/004.jpg" alt="Cámara Planta Coroico" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 5 -->
+                <!-- Planta 5 - Copacabana -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -945,10 +1072,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="copacabana">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-copacabana">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Copacabana</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/005.jpg" alt="Cámara Planta Copacabana" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 6 -->
+                <!-- Planta 6 - Patacamaya -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -980,10 +1121,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="patacamaya">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-patacamaya">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Patacamaya</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/006.jpg" alt="Cámara Planta Patacamaya" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 7 -->
+                <!-- Planta 7 - Sorata -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -1015,10 +1170,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="sorata">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-sorata">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Sorata</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/007.jpg" alt="Cámara Planta Sorata" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 8 -->
+                <!-- Planta 8 - Caranavi -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -1050,10 +1219,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="caranavi">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-caranavi">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Caranavi</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/008.jpg" alt="Cámara Planta Caranavi" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 9 -->
+                <!-- Planta 9 - Chulumani -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -1085,10 +1268,24 @@
                                 <div class="sensor-label">Flujo</div>
                             </div>
                         </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="chulumani">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-chulumani">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Chulumani</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/009.jpg" alt="Cámara Planta Chulumani" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Planta 10 -->
+                <!-- Planta 10 - Apolo -->
                 <div class="plant-card">
                     <div class="plant-header">
                         <div>
@@ -1118,6 +1315,20 @@
                                 <i class="fas fa-chart-line fa-3x" style="color: #34a853;"></i>
                                 <div class="digital-display">360 L/min</div>
                                 <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-camera camera-toggle" data-plant="apolo">
+                            <i class="fas fa-camera"></i> Cámara Web
+                        </button>
+                        <div class="camera-feed" id="camera-apolo">
+                            <div class="camera-header">
+                                <span>Cámara Principal - Planta Apolo</span>
+                                <div class="camera-live">LIVE</div>
+                            </div>
+                            <img src="https://kabertpro.github.io/aquacontrol_bolivia/camaras/010.jpg" alt="Cámara Planta Apolo" class="camera-image" onerror="this.style.display='none'; this.parentNode.querySelector('.camera-placeholder').style.display='flex';">
+                            <div class="camera-placeholder" style="display: none;">
+                                <i class="fas fa-camera fa-2x"></i>
+                                <span style="margin-left: 10px;">Cámara no disponible</span>
                             </div>
                         </div>
                     </div>
@@ -1302,6 +1513,33 @@
             });
         });
 
+        // Camera toggle functionality
+        document.querySelectorAll('.camera-toggle').forEach(button => {
+            button.addEventListener('click', function() {
+                const plantId = this.getAttribute('data-plant');
+                const cameraFeed = document.getElementById(`camera-${plantId}`);
+                
+                // Toggle camera visibility
+                if (cameraFeed.classList.contains('active')) {
+                    cameraFeed.classList.remove('active');
+                    this.innerHTML = '<i class="fas fa-camera"></i> Cámara Web';
+                } else {
+                    cameraFeed.classList.add('active');
+                    this.innerHTML = '<i class="fas fa-times"></i> Ocultar Cámara';
+                    
+                    // Simulate live feed by refreshing image (in a real app this would be a video stream)
+                    const img = cameraFeed.querySelector('img');
+                    if (img) {
+                        const src = img.src;
+                        img.src = '';
+                        setTimeout(() => {
+                            img.src = src + '?t=' + new Date().getTime();
+                        }, 100);
+                    }
+                }
+            });
+        });
+
         // Simulate live data updates
         function updateSensorData() {
             // Randomly update temperature values
@@ -1412,8 +1650,6 @@
         document.getElementById('generateReport').addEventListener('click', function(e) {
             e.preventDefault();
             
-            // In a real implementation, this would use jsPDF and html2canvas
-            // For this demo, we'll simulate the process
             alert('Generando reporte en PDF...\n\nEn una implementación real, esto generaría un documento PDF profesional con todos los datos del dashboard, gráficos y métricas actuales.');
             
             // Simulate PDF generation
@@ -1445,7 +1681,6 @@
                 }
             });
             
-            // In a real implementation, we would add charts and more detailed data
             doc.save(`reporte_aquacontrol_${new Date().toISOString().split('T')[0]}.pdf`);
         });
 
