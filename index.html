@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaControl Bolivia - Sistema de Monitoreo de Plantas de Purificación</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --secondary: #34a853;
+            --warning: #fbbc05;
+            --danger: #ea4335;
+            --dark: #202124;
+            --light: #f8f9fa;
+            --gray: #5f6368;
+            --process-1: #4285F4;
+            --process-2: #34A853;
+            --process-3: #FBBC05;
+            --process-4: #EA4335;
+            --process-5: #8E44AD;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .logo span {
+            color: var(--primary);
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--danger);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .live-indicator::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        /* Navigation */
+        nav {
+            background-color: var(--dark);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 15px 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-links li a:hover, .nav-links li a.active {
+            background-color: var(--primary);
+        }
+        
+        /* Main Content */
+        .dashboard {
+            padding: 30px 0;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .dashboard-header h2 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #0d62d3;
+        }
+        
+        /* Plant Cards */
+        .plants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .plant-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .plant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .plant-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .plant-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .plant-location {
+            font-size: 14px;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+        
+        .status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-operational {
+            background-color: rgba(52, 168, 83, 0.1);
+            color: var(--secondary);
+        }
+        
+        .status-warning {
+            background-color: rgba(251, 188, 5, 0.1);
+            color: var(--warning);
+        }
+        
+        .status-danger {
+            background-color: rgba(234, 67, 53, 0.1);
+            color: var(--danger);
+        }
+        
+        .plant-body {
+            padding: 20px;
+        }
+        
+        .sensor-readings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .sensor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .sensor-value {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px;
+        }
+        
+        .sensor-label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        /* Digital Sensor Display */
+        .digital-display {
+            background-color: var(--dark);
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin: 5px 0;
+            box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+        
+        /* Thermometer Animation */
+        .thermometer {
+            width: 40px;
+            height: 120px;
+            background: linear-gradient(to top, var(--danger) 0%, var(--warning) 50%, var(--secondary) 100%);
+            border-radius: 20px;
+            position: relative;
+            margin: 0 auto 10px;
+            overflow: hidden;
+        }
+        
+        .thermometer::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background-color: var(--secondary);
+            transition: height 2s ease-in-out;
+        }
+        
+        .thermometer::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            border: 8px solid var(--secondary);
+        }
+        
+        .thermometer.medium::before {
+            height: 60%;
+            background-color: var(--warning);
+        }
+        
+        .thermometer.high::before {
+            height: 90%;
+            background-color: var(--danger);
+        }
+        
+        /* Process Visualization */
+        .process-visualization {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .process-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .process-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            position: relative;
+        }
+        
+        .process-step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .process-step.active {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        
+        .process-step.warning {
+            box-shadow: 0 0 0 2px var(--warning);
+        }
+        
+        .process-step.danger {
+            box-shadow: 0 0 0 2px var(--danger);
+        }
+        
+        .process-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .process-1 .process-icon { background-color: var(--process-1); }
+        .process-2 .process-icon { background-color: var(--process-2); }
+        .process-3 .process-icon { background-color: var(--process-3); }
+        .process-4 .process-icon { background-color: var(--process-4); }
+        .process-5 .process-icon { background-color: var(--process-5); }
+        
+        .process-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .process-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        
+        .process-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .process-connector {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        
+        /* Charts Section */
+        .charts-section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .chart {
+            height: 250px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: flex-end;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .bar {
+            flex: 1;
+            background-color: var(--primary);
+            margin: 0 5px;
+            border-radius: 3px 3px 0 0;
+            position: relative;
+            transition: height 1s ease-in-out;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        /* Alerts Section */
+        .alerts-section {
+            margin-bottom: 40px;
+        }
+        
+        .alerts-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .alert {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .alert:last-child {
+            border-bottom: none;
+        }
+        
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        .alert-warning .alert-icon {
+            background-color: rgba(251, 188, 5, 0.1);
+            color: var(--warning);
+        }
+        
+        .alert-danger .alert-icon {
+            background-color: rgba(234, 67, 53, 0.1);
+            color: var(--danger);
+        }
+        
+        .alert-info .alert-icon {
+            background-color: rgba(26, 115, 232, 0.1);
+            color: var(--primary);
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .alert-time {
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        /* Team Section */
+        .team-section {
+            margin-bottom: 40px;
+            display: none;
+        }
+        
+        .team-section.active {
+            display: block;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        
+        .team-member {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            text-align: center;
+            padding: 25px 20px;
+        }
+        
+        .member-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--gray);
+        }
+        
+        .member-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .member-role {
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .member-bio {
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .process-flow {
+                justify-content: center;
+            }
+            
+            .process-step {
+                min-width: 120px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-flow {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .process-step {
+                min-width: auto;
+                margin-bottom: 15px;
+            }
+            
+            .process-connector {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .plants-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .sensor-readings {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-tint"></i>
+                    <h1>Aqua<span>Control</span> Bolivia</h1>
+                </div>
+                <div class="live-indicator">
+                    LIVE
+                </div>
+            </div>
+        </div>
+        <nav>
+            <div class="container">
+                <ul class="nav-links">
+                    <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#" data-section="team">Nuestro Equipo</a></li>
+                    <li><a href="#" id="generateReport">Generar Reporte PDF</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="dashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h2>Panel de Control - Plantas de Purificación</h2>
+                <button class="btn" id="refreshData">
+                    <i class="fas fa-sync-alt"></i> Actualizar Datos
+                </button>
+            </div>
+
+            <!-- Process Visualization -->
+            <div class="process-visualization">
+                <h3 class="process-title">Proceso de Purificación - Planta El Alto</h3>
+                <div class="process-flow">
+                    <div class="process-connector"></div>
+                    <div class="process-step process-1 active">
+                        <div class="process-icon">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <div class="process-name">Macrofiltración</div>
+                        <div class="process-value">4.2 bar</div>
+                        <div class="process-status status-operational">Normal</div>
+                    </div>
+                    <div class="process-step process-2 active">
+                        <div class="process-icon">
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <div class="process-name">Microfiltración</div>
+                        <div class="process-value">3.8 bar</div>
+                        <div class="process-status status-operational">Normal</div>
+                    </div>
+                    <div class="process-step process-3 active">
+                        <div class="process-icon">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <div class="process-name">Ósmosis Inversa</div>
+                        <div class="process-value">92%</div>
+                        <div class="process-status status-operational">Normal</div>
+                    </div>
+                    <div class="process-step process-4 warning">
+                        <div class="process-icon">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <div class="process-name">Ozono</div>
+                        <div class="process-value">0.4 mg/L</div>
+                        <div class="process-status status-warning">Bajo</div>
+                    </div>
+                    <div class="process-step process-5 active">
+                        <div class="process-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="process-name">Luz UV</div>
+                        <div class="process-value">98%</div>
+                        <div class="process-status status-operational">Normal</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="plants-grid">
+                <!-- Planta 1 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta El Alto</h3>
+                            <div class="plant-location">Ciudad de El Alto, La Paz</div>
+                        </div>
+                        <span class="status status-operational">Operacional</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer medium" id="temp-elalto"></div>
+                                <div class="digital-display">24.5°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #1a73e8;"></i>
+                                <div class="digital-display">7.2 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">98%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">450 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 2 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Viacha</h3>
+                            <div class="plant-location">Municipio de Viacha, La Paz</div>
+                        </div>
+                        <span class="status status-warning">Advertencia</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer high" id="temp-viacha"></div>
+                                <div class="digital-display">29.8°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #ea4335;"></i>
+                                <div class="digital-display">5.9 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">87%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">520 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 3 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Achacachi</h3>
+                            <div class="plant-location">Provincia Omasuyos, La Paz</div>
+                        </div>
+                        <span class="status status-operational">Operacional</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer" id="temp-achacachi"></div>
+                                <div class="digital-display">22.3°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #1a73e8;"></i>
+                                <div class="digital-display">7.5 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">96%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">380 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 4 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Coroico</h3>
+                            <div class="plant-location">Provincia Nor Yungas, La Paz</div>
+                        </div>
+                        <span class="status status-operational">Operacional</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer" id="temp-coroico"></div>
+                                <div class="digital-display">26.1°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #1a73e8;"></i>
+                                <div class="digital-display">7.1 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">94%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">410 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 5 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Copacabana</h3>
+                            <div class="plant-location">Provincia Manco Kapac, La Paz</div>
+                        </div>
+                        <span class="status status-warning">Advertencia</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer medium" id="temp-copacabana"></div>
+                                <div class="digital-display">27.5°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">6.5 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">89%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">370 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 6 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Patacamaya</h3>
+                            <div class="plant-location">Provincia Aroma, La Paz</div>
+                        </div>
+                        <span class="status status-operational">Operacional</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer" id="temp-patacamaya"></div>
+                                <div class="digital-display">23.8°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #1a73e8;"></i>
+                                <div class="digital-display">7.3 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">95%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">420 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 7 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Sorata</h3>
+                            <div class="plant-location">Provincia Larecaja, La Paz</div>
+                        </div>
+                        <span class="status status-operational">Operacional</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer" id="temp-sorata"></div>
+                                <div class="digital-display">21.5°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #1a73e8;"></i>
+                                <div class="digital-display">7.4 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">97%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">390 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 8 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Caranavi</h3>
+                            <div class="plant-location">Provincia Caranavi, La Paz</div>
+                        </div>
+                        <span class="status status-danger">Crítico</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer high" id="temp-caranavi"></div>
+                                <div class="digital-display">31.2°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #ea4335;"></i>
+                                <div class="digital-display">5.2 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #ea4335;"></i>
+                                <div class="digital-display">78%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">290 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 9 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Chulumani</h3>
+                            <div class="plant-location">Provincia Sud Yungas, La Paz</div>
+                        </div>
+                        <span class="status status-operational">Operacional</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer" id="temp-chulumani"></div>
+                                <div class="digital-display">25.3°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #1a73e8;"></i>
+                                <div class="digital-display">7.0 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">93%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">440 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planta 10 -->
+                <div class="plant-card">
+                    <div class="plant-header">
+                        <div>
+                            <h3>Planta Apolo</h3>
+                            <div class="plant-location">Provincia Franz Tamayo, La Paz</div>
+                        </div>
+                        <span class="status status-warning">Advertencia</span>
+                    </div>
+                    <div class="plant-body">
+                        <div class="sensor-readings">
+                            <div class="sensor">
+                                <div class="thermometer medium" id="temp-apolo"></div>
+                                <div class="digital-display">28.7°C</div>
+                                <div class="sensor-label">Temperatura</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-tint fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">6.3 pH</div>
+                                <div class="sensor-label">Nivel de pH</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-water fa-3x" style="color: #fbbc05;"></i>
+                                <div class="digital-display">86%</div>
+                                <div class="sensor-label">Pureza</div>
+                            </div>
+                            <div class="sensor">
+                                <i class="fas fa-chart-line fa-3x" style="color: #34a853;"></i>
+                                <div class="digital-display">360 L/min</div>
+                                <div class="sensor-label">Flujo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <h3 class="section-title">Métricas de Rendimiento</h3>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Consumo de Energía (kWh)</h4>
+                        <div class="chart" id="energy-chart">
+                            <div class="bar" style="height: 70%;">
+                                <div class="bar-label">El Alto</div>
+                            </div>
+                            <div class="bar" style="height: 85%;">
+                                <div class="bar-label">Viacha</div>
+                            </div>
+                            <div class="bar" style="height: 60%;">
+                                <div class="bar-label">Achacachi</div>
+                            </div>
+                            <div class="bar" style="height: 75%;">
+                                <div class="bar-label">Coroico</div>
+                            </div>
+                            <div class="bar" style="height: 80%;">
+                                <div class="bar-label">Copacabana</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h4 class="chart-title">Eficiencia de Filtración (%)</h4>
+                        <div class="chart" id="efficiency-chart">
+                            <div class="bar" style="height: 95%; background-color: #34a853;">
+                                <div class="bar-label">El Alto</div>
+                            </div>
+                            <div class="bar" style="height: 82%; background-color: #fbbc05;">
+                                <div class="bar-label">Viacha</div>
+                            </div>
+                            <div class="bar" style="height: 91%; background-color: #34a853;">
+                                <div class="bar-label">Achacachi</div>
+                            </div>
+                            <div class="bar" style="height: 88%; background-color: #34a853;">
+                                <div class="bar-label">Coroico</div>
+                            </div>
+                            <div class="bar" style="height: 84%; background-color: #fbbc05;">
+                                <div class="bar-label">Copacabana</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alerts-section">
+                <h3 class="section-title">Alertas del Sistema</h3>
+                <div class="alerts-container">
+                    <div class="alert alert-danger">
+                        <div class="alert-icon">
+                            <i class="fas fa-skull-crossbones"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Fallo crítico en Planta Caranavi</div>
+                            <div class="alert-desc">Temperatura y niveles de pH fuera de rango operacional. Eficiencia de purificación por debajo del 80%.</div>
+                            <div class="alert-time">Hace 8 minutos</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Temperatura elevada en Planta Viacha</div>
+                            <div class="alert-desc">La temperatura ha superado el umbral de 28°C</div>
+                            <div class="alert-time">Hace 15 minutos</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Nivel de ozono bajo en Planta El Alto</div>
+                            <div class="alert-desc">Concentración de ozono por debajo del nivel óptimo para desinfección</div>
+                            <div class="alert-time">Hace 22 minutos</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <div class="alert-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Mantenimiento programado para Planta Achacachi</div>
+                            <div class="alert-desc">Próximo mantenimiento: 18 de noviembre</div>
+                            <div class="alert-time">Hace 2 horas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="team" class="team-section">
+            <h2 class="section-title">Nuestro Equipo de Ingenieros</h2>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-photo">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Adrian Roque</h3>
+                    <div class="member-role">Ingeniero en Sistemas</div>
+                    <p class="member-bio">Especialista en automatización industrial y control de procesos con más de 10 años de experiencia en plantas de tratamiento de agua.</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Luz Callisaya</h3>
+                    <div class="member-role">Ingeniera Química</div>
+                    <p class="member-bio">Experta en procesos de purificación y calidad del agua. Responsable de los protocolos de seguridad y eficiencia en todas nuestras plantas.</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Fernando Chuquimia</h3>
+                    <div class="member-role">Ingeniero Mecánico</div>
+                    <p class="member-bio">Especializado en el mantenimiento y optimización de equipos de filtración y bombeo. Garantiza la operación continua de nuestras instalaciones.</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Robert Torres</h3>
+                    <div class="member-role">Ingeniero Eléctrico</div>
+                    <p class="member-bio">Responsable de los sistemas de energía y automatización. Desarrolla soluciones innovadoras para el monitoreo remoto de nuestras plantas.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">
+                    <i class="fas fa-tint"></i>
+                    <h2>Aqua<span>Control</span> Bolivia</h2>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#" data-section="team">Nuestro Equipo</a></li>
+                    <li><a href="#">Contacto</a></li>
+                    <li><a href="#">Política de Privacidad</a></li>
+                </ul>
+                <div class="copyright">
+                    &copy; 2023 AquaControl Bolivia - Sistema de Monitoreo de Plantas de Purificación. Todos los derechos reservados.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation between sections
+        document.querySelectorAll('.nav-links a, .footer-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('data-section')) {
+                    e.preventDefault();
+                    
+                    // Hide all sections
+                    document.querySelectorAll('section').forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    
+                    // Show selected section
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).style.display = 'block';
+                    
+                    // Update active nav link
+                    document.querySelectorAll('.nav-links a').forEach(navLink => {
+                        navLink.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Simulate live data updates
+        function updateSensorData() {
+            // Randomly update temperature values
+            const plants = [
+                'elalto', 'viacha', 'achacachi', 'coroico', 'copacabana',
+                'patacamaya', 'sorata', 'caranavi', 'chulumani', 'apolo'
+            ];
+            
+            plants.forEach(plant => {
+                const tempElement = document.querySelector(`#temp-${plant}`);
+                const valueElement = tempElement.nextElementSibling;
+                
+                // Random temperature between 20 and 32
+                const newTemp = (20 + Math.random() * 12).toFixed(1);
+                valueElement.textContent = `${newTemp}°C`;
+                
+                // Update thermometer class based on temperature
+                tempElement.className = 'thermometer';
+                if (newTemp > 25) tempElement.classList.add('medium');
+                if (newTemp > 28) tempElement.classList.add('high');
+            });
+            
+            // Randomly update other sensor values with slight variations
+            document.querySelectorAll('.digital-display').forEach(element => {
+                if (!element.textContent.includes('°C')) {
+                    const currentValue = parseFloat(element.textContent);
+                    const unit = element.textContent.replace(/[0-9.]/g, '');
+                    
+                    // Add small random variation (±5%)
+                    const variation = (Math.random() * 0.1) - 0.05;
+                    const newValue = currentValue * (1 + variation);
+                    
+                    if (unit.includes('%')) {
+                        element.textContent = `${Math.min(100, Math.max(0, newValue)).toFixed(0)}%`;
+                    } else if (unit.includes('pH')) {
+                        element.textContent = `${Math.min(14, Math.max(0, newValue)).toFixed(1)} pH`;
+                    } else if (unit.includes('L/min')) {
+                        element.textContent = `${Math.max(0, newValue).toFixed(0)} L/min`;
+                    }
+                }
+            });
+            
+            // Update chart heights slightly
+            document.querySelectorAll('.bar').forEach(bar => {
+                const currentHeight = parseFloat(bar.style.height);
+                const variation = (Math.random() * 10) - 5; // -5% to +5%
+                const newHeight = Math.max(10, Math.min(100, currentHeight + variation));
+                bar.style.height = `${newHeight}%`;
+            });
+            
+            // Update process visualization status
+            updateProcessStatus();
+        }
+        
+        // Update process visualization status
+        function updateProcessStatus() {
+            const processSteps = document.querySelectorAll('.process-step');
+            
+            processSteps.forEach(step => {
+                // Remove all status classes
+                step.classList.remove('active', 'warning', 'danger');
+                
+                // Randomly assign status (mostly active, some warnings, rarely danger)
+                const rand = Math.random();
+                if (rand < 0.7) {
+                    step.classList.add('active');
+                } else if (rand < 0.9) {
+                    step.classList.add('warning');
+                    
+                    // Update status indicator
+                    const statusElement = step.querySelector('.process-status');
+                    statusElement.textContent = 'Advertencia';
+                    statusElement.className = 'process-status status-warning';
+                } else {
+                    step.classList.add('danger');
+                    
+                    // Update status indicator
+                    const statusElement = step.querySelector('.process-status');
+                    statusElement.textContent = 'Crítico';
+                    statusElement.className = 'process-status status-danger';
+                }
+                
+                // Update process values with slight variations
+                const valueElement = step.querySelector('.process-value');
+                if (valueElement) {
+                    const currentValue = parseFloat(valueElement.textContent);
+                    const unit = valueElement.textContent.replace(/[0-9.]/g, '');
+                    
+                    // Add small random variation
+                    const variation = (Math.random() * 0.1) - 0.05;
+                    const newValue = currentValue * (1 + variation);
+                    
+                    if (unit.includes('bar')) {
+                        valueElement.textContent = `${Math.max(0, newValue).toFixed(1)} bar`;
+                    } else if (unit.includes('%')) {
+                        valueElement.textContent = `${Math.min(100, Math.max(0, newValue)).toFixed(0)}%`;
+                    } else if (unit.includes('mg/L')) {
+                        valueElement.textContent = `${Math.max(0, newValue).toFixed(1)} mg/L`;
+                    }
+                }
+            });
+        }
+
+        // Refresh data button
+        document.getElementById('refreshData').addEventListener('click', updateSensorData);
+
+        // Generate PDF Report
+        document.getElementById('generateReport').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // In a real implementation, this would use jsPDF and html2canvas
+            // For this demo, we'll simulate the process
+            alert('Generando reporte en PDF...\n\nEn una implementación real, esto generaría un documento PDF profesional con todos los datos del dashboard, gráficos y métricas actuales.');
+            
+            // Simulate PDF generation
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(20);
+            doc.text('Reporte del Sistema - AquaControl Bolivia', 20, 30);
+            doc.setFontSize(12);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 45);
+            
+            doc.setFontSize(16);
+            doc.text('Resumen de Plantas', 20, 65);
+            
+            doc.setFontSize(12);
+            let yPosition = 80;
+            
+            document.querySelectorAll('.plant-card').forEach(card => {
+                const plantName = card.querySelector('.plant-header h3').textContent;
+                const location = card.querySelector('.plant-location').textContent;
+                const status = card.querySelector('.status').textContent;
+                
+                doc.text(`${plantName} (${location}): ${status}`, 20, yPosition);
+                yPosition += 10;
+                
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+            });
+            
+            // In a real implementation, we would add charts and more detailed data
+            doc.save(`reporte_aquacontrol_${new Date().toISOString().split('T')[0]}.pdf`);
+        });
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial random values
+            updateSensorData();
+            
+            // Update data every 30 seconds to simulate live data
+            setInterval(updateSensorData, 30000);
+        });
+    </script>
+</body>
+</html>
